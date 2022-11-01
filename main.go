@@ -3,85 +3,76 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"math/rand"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-// book struct (model)
-type Book struct {
-	ID     string  `json:"id"`
-	Isbn   string  `json:"isbn"`
-	Title  string  `json:"title"`
-	Author *Author `json:"author"`
-}
-
-// author struct
-type Author struct {
+// user struct (model)
+type User struct {
+	ID        string `json:"id"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
 }
 
-// Init books var as a slice Book struct
-var books []Book
+// Init users var as a slice User struct
+var users []User
 
-// get all books
-func getBooks(w http.ResponseWriter, r *http.Request) {
+// get all users
+func getUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(books)
+	json.NewEncoder(w).Encode(users)
 }
 
-// get single book
-func getBook(w http.ResponseWriter, r *http.Request) {
+// get single user
+func getUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r) //get params
-	for _, item := range books {
-		if item.ID == params["id"] {
+	for _, item := range users {
+		if item.Email == params["email"] {
 			json.NewEncoder(w).Encode(item)
 			return
 		}
 	}
-	json.NewEncoder(w).Encode(&Book{})
+	json.NewEncoder(w).Encode(&User{})
 }
 
-// create new book
-func createBook(w http.ResponseWriter, r *http.Request) {
+// create new user
+func createUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var book Book
-	_ = json.NewDecoder(r.Body).Decode(&book)
-	book.ID = strconv.Itoa(rand.Intn(10000000)) //mock id, not safe
-	books = append(books, book)
-	json.NewEncoder(w).Encode(book)
+	var user User
+	_ = json.NewDecoder(r.Body).Decode(&user)
+	users = append(users, user)
+	json.NewEncoder(w).Encode(user)
 
 }
 
-// update book
-func updateBook(w http.ResponseWriter, r *http.Request) {
+// update user
+func updateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	for index, item := range books {
-		if item.ID == params["id"] {
-			books = append(books[:index], books[index+1:]...)
-			var book Book
-			_ = json.NewDecoder(r.Body).Decode(&book)
-			book.ID = params["id"]
-			books = append(books, book)
-			json.NewEncoder(w).Encode(book)
+	for index, item := range users {
+		if item.Email == params["email"] {
+			users = append(users[:index], users[index+1:]...)
+			var user User
+			_ = json.NewDecoder(r.Body).Decode(&user)
+			user.Email = params["email"]
+			users = append(users, user)
+			json.NewEncoder(w).Encode(user)
 			return
 		}
 
 	}
 }
 
-// delete book
-func deleteBooks(w http.ResponseWriter, r *http.Request) {
+// delete user
+func deleteUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	for index, item := range books {
-		if item.ID == params["id"] {
-			books = append(books[:index], books[index+1:]...)
+	for index, item := range users {
+		if item.Email == params["email"] {
+			users = append(users[:index], users[index+1:]...)
 			break
 		}
 
@@ -94,16 +85,16 @@ func main() {
 	r := mux.NewRouter()
 
 	// mock datas @todo - implement DB
-	books = append(books, Book{ID: "1", Isbn: "23345", Title: "Fields of poo", Author: &Author{Firstname: "john", Lastname: "dope"}})
-	books = append(books, Book{ID: "2", Isbn: "278342", Title: "Fields of flour", Author: &Author{Firstname: "john", Lastname: "dope"}})
-	books = append(books, Book{ID: "3", Isbn: "53", Title: "Blah blah", Author: &Author{Firstname: "john", Lastname: "dope"}})
+	users = append(users, User{ID: "1", Firstname: "Frank", Lastname: "Stein", Email: "frank@hotmail.com"})
+	users = append(users, User{ID: "2", Firstname: "Count", Lastname: "Dracula", Email: "fangs@hotmail.com"})
+	users = append(users, User{ID: "3", Firstname: "Scary", Lastname: "Monster", Email: "monster@hotmail.com"})
 
 	// route handlers/endpoints
-	r.HandleFunc("/api/books", getBooks).Methods("GET")
-	r.HandleFunc("/api/books/{id}", getBook).Methods("GET")
-	r.HandleFunc("/api/books", createBook).Methods("POST")
-	r.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
-	r.HandleFunc("/api/books/{id}", deleteBooks).Methods("DELETE")
+	r.HandleFunc("/api/users", getUsers).Methods("GET")
+	r.HandleFunc("/api/users/{email}", getUser).Methods("GET")
+	r.HandleFunc("/api/users", createUser).Methods("POST")
+	r.HandleFunc("/api/users/{email}", updateUser).Methods("PUT")
+	r.HandleFunc("/api/users/{email}", deleteUsers).Methods("DELETE")
 
 	// run the server
 	log.Fatal(http.ListenAndServe(":8000", r))
