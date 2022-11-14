@@ -2,81 +2,60 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
 
 // user struct (model)
 type User struct {
-	ID        string `json:"id"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
+	Firstname string `json:"first"`
 	Email     string `json:"email"`
+	Lastname  string `json:"last"`
+	Status    string `json:"status"`
+	Pay       int    `json:"pay"`
 }
 
 // Init users var as a slice User struct
 var users []User
 
-// get all users
-func getUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+func initializeUsers(users *[]User, fileName string) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// read our opened xmlFile as a byte array.
+	byteValue, _ := ioutil.ReadAll(file)
+
+	json.Unmarshal(byteValue, &users)
+
 }
 
-// get single user
-func getUser(w http.ResponseWriter, r *http.Request) {
+// check for user
+func checkUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r) //get params
+	var user User
+	_ = json.NewDecoder(r.Body).Decode(&user)
 	for _, item := range users {
-		if item.Email == params["email"] {
+		if (item.Email == user.Email) && (item.Firstname == user.Firstname) {
 			json.NewEncoder(w).Encode(item)
 			return
 		}
 	}
-	json.NewEncoder(w).Encode(&User{})
-}
-
-// create new user
-func createUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var user User
-	_ = json.NewDecoder(r.Body).Decode(&user)
+	json.NewEncoder(w).Encode("New user created:")
 	users = append(users, user)
+
+	file, _ := json.MarshalIndent(users, "", " ")
+
+	_ = ioutil.WriteFile("employees.json", file, 0644)
+
 	json.NewEncoder(w).Encode(user)
 
-}
-
-// update user
-func updateUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	for index, item := range users {
-		if item.Email == params["email"] {
-			users = append(users[:index], users[index+1:]...)
-			var user User
-			_ = json.NewDecoder(r.Body).Decode(&user)
-			user.Email = params["email"]
-			users = append(users, user)
-			json.NewEncoder(w).Encode(user)
-			return
-		}
-
-	}
-}
-
-// delete user
-func deleteUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	for index, item := range users {
-		if item.Email == params["email"] {
-			users = append(users[:index], users[index+1:]...)
-			break
-		}
-
-	}
 }
 
 func main() {
@@ -84,17 +63,15 @@ func main() {
 	// init router
 	r := mux.NewRouter()
 
+	initializeUsers(&users, "employees.json")
+
 	// mock datas @todo - implement DB
-	users = append(users, User{ID: "1", Firstname: "Frank", Lastname: "Stein", Email: "frank@hotmail.com"})
-	users = append(users, User{ID: "2", Firstname: "Count", Lastname: "Dracula", Email: "fangs@hotmail.com"})
-	users = append(users, User{ID: "3", Firstname: "Scary", Lastname: "Monster", Email: "monster@hotmail.com"})
+	// users = append(users, User{Firstname: "Frank", Lastname: "Stein", Email: "frank@hotmail.com"})
+	// users = append(users, User{Firstname: "Count", Lastname: "Dracula", Email: "fangs@hotmail.com"})
+	// users = append(users, User{Firstname: "Scary", Lastname: "Monster", Email: "monster@hotmail.com"})
 
 	// route handlers/endpoints
-	r.HandleFunc("/api/users", getUsers).Methods("GET")
-	r.HandleFunc("/api/users/{email}", getUser).Methods("GET")
-	r.HandleFunc("/api/users", createUser).Methods("POST")
-	r.HandleFunc("/api/users/{email}", updateUser).Methods("PUT")
-	r.HandleFunc("/api/users/{email}", deleteUsers).Methods("DELETE")
+	r.HandleFunc("/api/check", checkUser).Methods("POST")
 
 	// run the server
 	log.Fatal(http.ListenAndServe(":8000", r))

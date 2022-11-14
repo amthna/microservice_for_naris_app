@@ -1,0 +1,58 @@
+[
+	{
+		"first": "Bard",
+		"last": "Pitt",
+		"email": "bp@gmail.com",
+		"status": "temp",
+		"pay": 30
+	},
+	{
+		"first": "Ajin",
+		"last": "Meal",
+		"email": "am@gmail.com",
+		"status": "permanent",
+		"pay": 25
+	},
+	{
+		"first": "Cameron",
+		"last": "Milia",
+		"email": "cm@gmail.com",
+		"status": "contract",
+		"pay": 40
+	},
+	{
+		"first": "Steve",
+		"last": "Yji",
+		"email": "st@gmail.com",
+		"status": "temp",
+		"pay": 35
+	},
+	{
+		"first": "Brown",
+		"last": "Puffs",
+		"email": "bp@gmail.com",
+		"status": "permanent",
+		"pay": 60
+	},
+	{
+		"first": "Dom",
+		"last": "Strada",
+		"email": "ds@gmail.com",
+		"status": "contract",
+		"pay": 75
+	},
+	{
+		"first": "Minion",
+		"last": "Yellow",
+		"email": "my@gmail.com",
+		"status": "temp",
+		"pay": 50
+	},
+	{
+		"first": "Liberty",
+		"last": "Meanie",
+		"email": "lm@gmail.com",
+		"status": "temp",
+		"pay": 20
+	}
+]
